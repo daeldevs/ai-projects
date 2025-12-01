@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ChatGPT 5.1 UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        .you {
+            background: #007aff;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .ai {
+            background: white;
+            border: 1px solid #ddd;
+            align-self: flex-start;
+        }
+
+        #input-area {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ddd;
+            align-items: center;
+        }
+
+        #msg {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        #sendBtn, #imageBtn {
+            padding: 10px 16px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #sendBtn { 
+            background: #007aff; 
+            color: white; 
+        }
+
+        #imageBtn {
+            background: #e0e0e0;
+        }
+
+        #image-preview {
+            width: 130px;
+            border-radius: 8px;
+            margin: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chat-container"></div>
+
+<!-- Image Preview (like ChatGPT) -->
+<img id="image-preview">
+
+<div id="input-area">
+    <button id="imageBtn">+</button>
+    <input id="msg" placeholder="Type a message…" />
+    <button id="sendBtn">Send</button>
+</div>
+
+<input type="file" id="imageInput" accept="image/*" style="display:none" />
+
+<script>
+// Click "+" button → open file picker
+document.getElementById("imageBtn").onclick = () => {
+    document.getElementById("imageInput").click();
+};
+
+// Image Preview logic
+document.getElementById("imageInput").onchange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        let preview = document.getElementById("image-preview");
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+    }
+};
+
+async function send() {
+    const message = document.getElementById("msg").value;
+    const imgFile = document.getElementById("imageInput").files[0];
+
+    if (!message && !imgFile) return;
+
+    // Show user's bubble
+    addBubble("you", message || "[Image]");
+
+    let payload = new FormData();
+    payload.append("message", message);
+
+    if (imgFile) payload.append("image", imgFile);
+
+    let response = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        body: payload
+    });
+
+    let data = await response.json();
+
+    // Show AI bubble
+    addBubble("ai", data.reply);
+
+    // Reset input + preview
+    document.getElementById("msg").value = "";
+    document.getElementById("imageInput").value = "";
+    let preview = document.getElementById("image-preview");
+    preview.style.display = "none";
+}
+
+document.getElementById("sendBtn").onclick = send;
+
+// Chat bubble creator
+function addBubble(role, text) {
+    const box = document.createElement("div");
+    box.className = `bubble ${role}`;
+    box.textContent = text;
+
+    document.getElementById("chat-container").appendChild(box);
+    document.getElementById("chat-container").scrollTop =
+        document.getElementById("chat-container").scrollHeight;
+}
+</script>
+
+</body>
+</html>
