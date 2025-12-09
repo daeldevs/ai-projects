@@ -3,3 +3,4 @@ __pycache__/
 media/
 *.pyc
 .env
+deepseek_r1_1_5b/
