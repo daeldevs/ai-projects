@@ -2,7 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
 import re
 
-model_path = r""
+model_path = r"D:\IT-PROJECTS\ai-projects\dseekr1distillqwen7b_local\deepseek_r1_1_5b"
 
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
